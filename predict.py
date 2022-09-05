@@ -6,7 +6,7 @@ from flask import Flask, render_template
 from flask import request
 
 app = Flask(__name__)
-model = tf.keras.models.load_model('my_model')
+model = tf.keras.models.load_model('my_model2')
 
 
 def checkPut(x, y, data):

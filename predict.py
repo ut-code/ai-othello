@@ -6,7 +6,7 @@ from flask import Flask, render_template
 from flask import request
 
 app = Flask(__name__)
-model = tf.keras.models.load_model('my_model2')
+model = tf.keras.models.load_model('my_model')
 
 
 def checkPut(x, y, data):
@@ -83,7 +83,6 @@ def predict():
         predicted = model.predict(board_data)
         for c in check_list:
             predicted[0][c[1]*8 + c[0]] = 0
-        print(predicted)
         return [int(np.argmax(predicted))]
 
 

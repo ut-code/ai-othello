@@ -14,12 +14,6 @@
             <div id="menu">
                 <p class="select">スタート</p>
             </div>
-            <!--<p>マスの数を選択してください</p>
-            <div id="menu">
-                <p id="4" class="select">4x4</p>
-                <p id="6" class="select">6x6</p>
-                <p id="8" class="select">8x8</p>
-            </div>-->
     </div>
     <div id="restartBtn" class="hide">クリックするとスタート画面に戻ります</div>
     <div id="content">
@@ -50,9 +44,7 @@
 
         let cells = 8; // マスの数
 
-        // スタート画面でマスの数が選択された時の処理
         function start(e) {
-            // cells = Number(e.target.id);
             cells = 8;
             board.innerHTML = "";
             init();
@@ -74,28 +66,10 @@
                 }
                 board.appendChild(tr);
             }
-            // マスの数によって石の初期配置を変える
-            switch (cells) {
-                case 4:
-                    board.classList.add("cell-4");
-                    putDisc(1, 1, WHITE);
-                    putDisc(2, 2, WHITE);
-                    putDisc(1, 2, BLACK);
-                    putDisc(2, 1, BLACK);
-                    break;
-                case 6:
-                    board.classList.add("cell-6");
-                    putDisc(2, 2, WHITE);
-                    putDisc(3, 3, WHITE);
-                    putDisc(2, 3, BLACK);
-                    putDisc(3, 2, BLACK);
-                    break;
-                case 8:
-                    putDisc(3, 3, WHITE);
-                    putDisc(4, 4, WHITE);
-                    putDisc(3, 4, BLACK);
-                    putDisc(4, 3, BLACK);
-            }
+            putDisc(3, 3, WHITE);
+            putDisc(4, 4, WHITE);
+            putDisc(3, 4, BLACK);
+            putDisc(4, 3, BLACK);
             showTurn();
         }
 
@@ -346,7 +320,5 @@
         }
     </script>
 </body>
-
-<!--<script src="static/js/main.js"></script>-->
 
 </html>

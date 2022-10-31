@@ -262,12 +262,10 @@ state = State()
 # モンテカルロ木探索で行動取得を行う関数の生成
 next_action = pv_mcts_action(model, 1.0)
 
-
 @app.route('/')
 def index():
     if request.method == 'GET':
         return render_template('index.html')
-
 
 @app.route('/predict', methods=['POST'])
 def ai_action():

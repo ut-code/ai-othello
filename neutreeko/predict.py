@@ -1,6 +1,6 @@
+from math import sqrt
 import tensorflow as tf
 import numpy as np
-
 
 from flask import Flask, render_template
 from flask import request
@@ -12,18 +12,15 @@ app = Flask(__name__)
 # ====================
 
 # パッケージのインポート
-from math import sqrt
-import numpy as np
 
 # パラメータの準備
-PV_EVALUATE_COUNT = 50 # 1推論あたりのシミュレーション回数（本家は1600）
-DN_INPUT_SHAPE = (5,5,2)
+PV_EVALUATE_COUNT = 50  # 1推論あたりのシミュレーション回数（本家は1600）
+DN_INPUT_SHAPE = (5, 5, 2)
 
 # その他の定数
 BLACK = 1
 WHITE = -1
 # ニュートリーコの作成
-import random
 
 # ゲームの状態
 class State:
@@ -89,7 +86,7 @@ class State:
 
     def position_to_action(self, y, x, dy, dx):
         return (x+y*5)*9 + (dy+1)*3 + (dx+1)
-    
+
     def action_to_position(self, action):
         y = (action // 9) // 5
         x = (action // 9) % 5
@@ -103,13 +100,13 @@ class State:
             else:
                 break
         if x != tx or y != ty:
-            return [x+y*5,tx+ty*5]
-
+            return [x+y*5, tx+ty*5]
 
     # 合法手のリストの取得
+
     def legal_actions(self):
         actions = []
-        dir = [[0,1],[1,0],[1,1],[-1,1]]
+        dir = [[0, 1], [1, 0], [1, 1], [-1, 1]]
         for i in range(25):
             if self.pieces[i] == 1:
                 def find_and_append(y, x, dy, dx, actions):
@@ -120,8 +117,8 @@ class State:
                     find_and_append(i // 5, i % 5, -d[0], -d[1], actions)
         return actions
 
-
     # 先手かどうか
+
     def is_first_player(self):
         return self.cnt % 2 == 0
 
@@ -141,6 +138,8 @@ class State:
         return str
 
 # 推論
+
+
 def predict(model, state):
     # 推論のための入力データのシェイプの変換
     a, b, c = DN_INPUT_SHAPE
@@ -151,14 +150,16 @@ def predict(model, state):
     y = model.predict(x, batch_size=1, verbose=0)
 
     # 方策の取得
-    policies = y[0][0][list(state.legal_actions())] # 合法手のみ
-    policies /= sum(policies) if sum(policies) else 1 # 合計1の確率分布に変換
+    policies = y[0][0][list(state.legal_actions())]  # 合法手のみ
+    policies /= sum(policies) if sum(policies) else 1  # 合計1の確率分布に変換
 
     # 価値の取得
     value = y[1][0][0]
     return policies, value
 
 # ノードのリストを試行回数のリストに変換
+
+
 def nodes_to_scores(nodes):
     scores = []
     for c in nodes:
@@ -171,10 +172,10 @@ def pv_mcts_scores(model, state, temperature):
     class Node:
         # ノードの初期化
         def __init__(self, state, p):
-            self.state = state # 状態
-            self.p = p # 方策
-            self.w = 0 # 累計価値
-            self.n = 0 # 試行回数
+            self.state = state  # 状態
+            self.p = p  # 方策
+            self.w = 0  # 累計価値
+            self.n = 0  # 試行回数
             self.child_nodes = None  # 子ノード群
 
         # 局面の価値の計算
@@ -201,7 +202,8 @@ def pv_mcts_scores(model, state, temperature):
                 # 子ノードの展開
                 self.child_nodes = []
                 for action, policy in zip(self.state.legal_actions(), policies):
-                    self.child_nodes.append(Node(self.state.next(action), policy))
+                    self.child_nodes.append(
+                        Node(self.state.next(action), policy))
                 return value
 
             # 子ノードが存在する時
@@ -222,7 +224,7 @@ def pv_mcts_scores(model, state, temperature):
             pucb_values = []
             for child_node in self.child_nodes:
                 pucb_values.append((-child_node.w / child_node.n if child_node.n else 0.0) +
-                    C_PUCT * child_node.p * sqrt(t) / (1 + child_node.n))
+                                   C_PUCT * child_node.p * sqrt(t) / (1 + child_node.n))
 
             # アーク評価値が最大の子ノードを返す
             return self.child_nodes[np.argmax(pucb_values)]
@@ -236,15 +238,17 @@ def pv_mcts_scores(model, state, temperature):
 
     # 合法手の確率分布
     scores = nodes_to_scores(root_node.child_nodes)
-    if temperature == 0: # 最大値のみ1
+    if temperature == 0:  # 最大値のみ1
         action = np.argmax(scores)
         scores = np.zeros(len(scores))
         scores[action] = 1
-    else: # ボルツマン分布でバラつき付加
+    else:  # ボルツマン分布でバラつき付加
         scores = boltzman(scores, temperature)
     return scores
 
 # モンテカルロ木探索で行動選択
+
+
 def pv_mcts_action(model, temperature=0):
     def pv_mcts_action(state):
         scores = pv_mcts_scores(model, state, temperature)
@@ -252,9 +256,12 @@ def pv_mcts_action(model, temperature=0):
     return pv_mcts_action
 
 # ボルツマン分布
+
+
 def boltzman(xs, temperature):
     xs = [x ** (1 / temperature) for x in xs]
     return [x / sum(xs) for x in xs]
+
 
 # モデルの読み込み
 model = tf.keras.models.load_model('./model/best.h5')
@@ -266,6 +273,7 @@ state = State()
 # モンテカルロ木探索で行動取得を行う関数の生成
 next_action = pv_mcts_action(model, 1.0)
 
+
 @app.route('/')
 def index():
     if request.method == 'GET':
@@ -275,6 +283,7 @@ def index():
 @app.route('/predict', methods=['POST'])
 def ai_action():
     if request.method == 'POST':
+        print("request accepted")
         board = request.json[0]
         ai_turn = request.json[1]
         pieces = [0] * 25
@@ -291,5 +300,6 @@ def ai_action():
         print(ai_action_position)
         return [int(ai_action_position[0]), int(ai_action_position[1])]
 
+
 # if __name__ == "__main__":
-#     app.run(debug=True, port=8888, threaded=True)
+#    app.run(debug=True, port=8888, threaded=True)

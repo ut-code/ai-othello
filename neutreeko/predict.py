@@ -267,7 +267,7 @@ def index():
     if request.method == 'GET':
         return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict/', methods=['POST'])
 def ai_action():
     if request.method == 'POST':
         print("request accepted")

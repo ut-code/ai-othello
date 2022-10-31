@@ -109,7 +109,7 @@ function ai_action() {
   var json = JSON.stringify(data_to_py);
   $.ajax({
     type: "POST",
-    url: "/predict",
+    url: "/predict/",
     data: json,
     contentType: "application/json",
   })

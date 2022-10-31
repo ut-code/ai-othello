@@ -291,5 +291,5 @@ def ai_action():
         print(ai_action_position)
         return [int(ai_action_position[0]), int(ai_action_position[1])]
 
-if __name__ == "__main__":
-    app.run(debug=False, port=8888, threaded=True)
+# if __name__ == "__main__":
+#     app.run(debug=True, port=8888, threaded=True)

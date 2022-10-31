@@ -1,7 +1,6 @@
 from math import sqrt
 import tensorflow as tf
 import numpy as np
-
 from flask import Flask, render_template
 from flask import request
 
@@ -103,7 +102,6 @@ class State:
             return [x+y*5, tx+ty*5]
 
     # 合法手のリストの取得
-
     def legal_actions(self):
         actions = []
         dir = [[0, 1], [1, 0], [1, 1], [-1, 1]]
@@ -118,7 +116,6 @@ class State:
         return actions
 
     # 先手かどうか
-
     def is_first_player(self):
         return self.cnt % 2 == 0
 
@@ -138,8 +135,6 @@ class State:
         return str
 
 # 推論
-
-
 def predict(model, state):
     # 推論のための入力データのシェイプの変換
     a, b, c = DN_INPUT_SHAPE
@@ -158,8 +153,6 @@ def predict(model, state):
     return policies, value
 
 # ノードのリストを試行回数のリストに変換
-
-
 def nodes_to_scores(nodes):
     scores = []
     for c in nodes:
@@ -247,8 +240,6 @@ def pv_mcts_scores(model, state, temperature):
     return scores
 
 # モンテカルロ木探索で行動選択
-
-
 def pv_mcts_action(model, temperature=0):
     def pv_mcts_action(state):
         scores = pv_mcts_scores(model, state, temperature)
@@ -256,8 +247,6 @@ def pv_mcts_action(model, temperature=0):
     return pv_mcts_action
 
 # ボルツマン分布
-
-
 def boltzman(xs, temperature):
     xs = [x ** (1 / temperature) for x in xs]
     return [x / sum(xs) for x in xs]

@@ -17,7 +17,12 @@ if (Math.random() > 0.5) {
 
 const board = document.getElementById("board");
 const turnPart = document.getElementById("turn-part");
-
+const whichIsHuman = document.getElementById("which-is-human");
+if (ai_turn == BLACK) {
+  whichIsHuman.textContent = "あなたは白です";
+} else {
+  whichIsHuman.textContent = "あなたは黒です";
+}
 let cells = 5;
 
 function init() {

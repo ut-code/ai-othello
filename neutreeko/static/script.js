@@ -127,7 +127,10 @@ function ai_action() {
         ? (turnPart.textContent = "黒の番です")
         : (turnPart.textContent = "白の番です");
     })
-    .fail(function () {
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
+      console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
+      console.log("errorThrown    : " + errorThrown.message); // 例外情報
       alert('ajax error');
     });
 }

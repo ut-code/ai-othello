@@ -104,6 +104,7 @@ function transfer(destination) {
 }
 
 function ai_action() {
+  console.log("ai_action");
   data_to_py = [data, turn];
   var json = JSON.stringify(data_to_py);
   $.ajax({

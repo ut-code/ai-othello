@@ -6,7 +6,7 @@ let data = [];
 let options = [];
 let selectedDisk = [];
 let turn = BLACK;
-let end = false; //終了したかどうか
+let isFinished = false; //終了したかどうか
 // AIが先手か否か決定
 let ai_turn;
 if (Math.random() > 0.5) {
@@ -66,7 +66,7 @@ function render() {
   for (let x = 0; x < cells; x++) {
     for (let y = 0; y < cells; y++) {
       if (options[y][x] == UNAVAILABLE) {
-        board.rows[y].cells[x].classList.remove("blue");
+        board.rows[y].cells[x].classList.remove("options");
         board.rows[y].cells[x].classList.add("green");
         if (data[y][x] == BLACK) {
           board.rows[y].cells[x].firstChild.classList.remove("white");
@@ -80,7 +80,15 @@ function render() {
         }
       } else {
         board.rows[y].cells[x].classList.remove("green");
-        board.rows[y].cells[x].classList.add("blue");
+        board.rows[y].cells[x].classList.add("options");
+      }
+      if (
+        JSON.stringify([selectedDisk[0], selectedDisk[1]]) !=
+        JSON.stringify([x, y])
+      ) {
+        board.rows[y].cells[x].firstChild.classList.remove("selected");
+      } else {
+        board.rows[y].cells[x].firstChild.classList.add("selected");
       }
     }
   }
@@ -97,10 +105,7 @@ function removeDisc(x, y) {
 function transfer(destination) {
   removeDisc(selectedDisk[0], selectedDisk[1]);
   addDisc(destination[0], destination[1], selectedDisk[2]);
-  // 選択肢の表示を解除
-  for (let i = 0; i < cells; i++) {
-    options[i] = Array(cells).fill(0);
-  }
+  cancelSelection();
 }
 
 function ai_action() {
@@ -116,7 +121,7 @@ function ai_action() {
     .done(function (action) {
       var fromY = Math.floor(action[0] / 5);
       var fromX = action[0] % 5;
-      var toY = Math.floor(action[1] / 5)
+      var toY = Math.floor(action[1] / 5);
       var toX = action[1] % 5;
       removeDisc(fromX, fromY);
       addDisc(toX, toY, turn);
@@ -129,15 +134,14 @@ function ai_action() {
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
-      console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
+      console.log("textStatus     : " + textStatus); // タイムアウト、パースエラー
       console.log("errorThrown    : " + errorThrown.message); // 例外情報
-      alert('ajax error');
+      alert("ajax error");
     });
 }
 
 function tdClicked() {
-  if (turn == ai_turn || end)
-    return;
+  if (turn == ai_turn || isFinished) return;
   const y = this.parentNode.rowIndex;
   const x = this.cellIndex;
 
@@ -145,13 +149,12 @@ function tdClicked() {
     //選択候補をクリックしたとき
     transfer([x, y]);
     render();
-    end = judge();
+    isFinished = judge();
     turn *= -1;
     turn == BLACK
       ? (turnPart.textContent = "黒の番です")
       : (turnPart.textContent = "白の番です");
-    if (!end)
-      ai_action();
+    if (!isFinished) ai_action();
   } else if (data[y][x] == turn) {
     // 自分のターンで操作可能なコマのあるマスをクリックしたとき
     for (let i = 0; i < cells; i++) {
@@ -162,12 +165,17 @@ function tdClicked() {
     render();
   } else {
     // 選択候補でなく、操作可能なコマもないマスをクリックしたとき
-    // 選択肢の表示を解除
-    for (let i = 0; i < cells; i++) {
-      options[i] = Array(cells).fill(0);
-    }
+    cancelSelection();
     render();
   }
+}
+
+function cancelSelection() {
+  // 選択肢の表示を解除
+  for (let i = 0; i < cells; i++) {
+    options[i] = Array(cells).fill(0);
+  }
+  selectedDisk = [];
 }
 
 function findOptions(x, y) {
@@ -218,17 +226,22 @@ function judge() {
   const whites = document.querySelectorAll(".white");
 
   if (isBingo(blacks)) {
-    setTimeout(() => {
-      alert("黒の勝ち!!");
-    }, 100);
-    return true;
+    // setTimeout(() => {
+    //   alert("黒の勝ち!!");
+    // }, 100);
+    winner = BLACK;
+    isFinished = true;
+    return;
   } else if (isBingo(whites)) {
-    setTimeout(() => {
-      alert("白の勝ち!!");
-    }, 100);
-    return true;
+    // setTimeout(() => {
+    //   alert("白の勝ち!!");
+    // }, 100);
+    winner = WHITE;
+    isFinished = true;
+    return;
   }
-  return false;
+  isFinished = false;
+  return;
 
   function isBingo(disks) {
     let xResult = [];

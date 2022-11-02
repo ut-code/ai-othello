@@ -34,10 +34,14 @@ h2 {
   margin: 5px 0;
 }
 
-.blue {
-  background-color: blue;
+.options {
+  background-color: #00aeef;
 }
 
 .green {
   background-color: green;
+}
+
+.selected {
+  box-shadow: 0 0 10px yellow;
 }

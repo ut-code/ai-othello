@@ -1,14 +1,38 @@
 body {
   text-align: center;
+  background-color: #fff9ee;
+  font-family: sans-serif;
 }
-main {
+/* main {
   display: inline-block;
   position: relative;
+} */
+
+#which-is-human.human-black {
+  color: white;
+  margin: 0 auto;
+  width: 240px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: black;
+}
+
+#which-is-human.human-white {
+  color: black;
+  margin: 0 auto;
+  width: 240px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: white;
 }
 
 #board {
   margin: 0 auto;
   background: #555555;
+}
+
+#board.reverse {
+  transform: rotate(180deg);
 }
 
 td.cell {

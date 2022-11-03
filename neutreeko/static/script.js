@@ -7,10 +7,10 @@ const START = 0,
 let data = [];
 let options = [];
 let selectedDisk = [];
-let turn = BLACK;
-let isFinished = false; //終了したかどうか
+let turn;
+let isFinished; //終了したかどうか
 
-let ai_turn;
+let ai_color;
 
 const board = document.getElementById("board");
 const whichIsHuman = document.getElementById("which-is-human");
@@ -27,15 +27,47 @@ const restartButton = document.getElementById("restart-button");
 
 let cells = 5;
 
+let yourTurnAnime;
+let aiTurnAnime;
+createTurnAnime();
+
+startButton.onclick = () => {
+  closeModal();
+  if (ai_color == BLACK) {
+    ai_action();
+  }
+};
+
+restartButton.onclick = () => {
+  closeModal();
+  setTimeout(() => {
+    init();
+  }, 500);
+};
+
 function init() {
+  data = [];
+  options = [];
+  selectedDisk = [];
+  turn = BLACK;
+  isFinished = false;
+
   // AIが先手か否か決定
   if (Math.random() > 0.5) {
-    ai_turn = WHITE;
-    whichIsHuman.textContent = "あなたは黒です";
+    ai_color = WHITE;
+    whichIsHuman.textContent = "あなたは黒(先手)です";
+    whichIsHuman.classList.remove("human-white");
+    whichIsHuman.classList.add("human-black");
+    board.classList.remove("reverse"); //反転を解除
   } else {
-    ai_turn = BLACK;
-    whichIsHuman.textContent = "あなたは白です";
+    ai_color = BLACK;
+    whichIsHuman.textContent = "あなたは白(後手)です";
+    whichIsHuman.classList.remove("human-black");
+    whichIsHuman.classList.add("human-white");
+    board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
   }
+
+  //盤面を作成
   board.innerHTML = "";
   for (let i = 0; i < cells; i++) {
     const tr = document.createElement("tr");
@@ -61,15 +93,10 @@ function init() {
   addDisk(1, 4, BLACK);
   addDisk(3, 4, BLACK);
 
-  turn == BLACK
-    ? (turnPart.textContent = "黒の番です")
-    : (turnPart.textContent = "白の番です");
-  isFinished = false;
+  showTurn();
+
   render();
   openModal(START);
-  if (ai_turn == BLACK) {
-    ai_action();
-  }
 }
 
 init();
@@ -107,6 +134,19 @@ function render() {
   }
 }
 
+//手番を表示
+function showTurn() {
+  yourTurnAnime.cancel();
+  aiTurnAnime.cancel();
+  if (turn == ai_color) {
+    turnPart.textContent = "AIの番です";
+    aiTurnAnime.play();
+  } else {
+    turnPart.textContent = "あなたの番です";
+    yourTurnAnime.play();
+  }
+}
+
 // (x, y) にcolor色のコマを追加
 function addDisk(x, y, color) {
   data[y][x] = color;
@@ -126,11 +166,11 @@ function transfer(destination) {
 
 // ユーザーがクリックした際の動作
 function tdClicked() {
-  if (turn == ai_turn || isFinished) return;
+  if (isFinished) return;
   const y = this.parentNode.rowIndex;
   const x = this.cellIndex;
 
-  if (options[y][x] == 1) {
+  if (options[y][x] == AVAILABLE) {
     //選択候補をクリックしたとき
     transfer([x, y]);
     render();
@@ -139,13 +179,11 @@ function tdClicked() {
       openModal(FINISH);
     } else {
       turn *= -1;
-      turn == BLACK
-        ? (turnPart.textContent = "黒の番です")
-        : (turnPart.textContent = "白の番です");
+      showTurn();
       ai_action();
     }
   } else if (data[y][x] == turn) {
-    // 自分のターンで操作可能なコマのあるマスをクリックしたとき
+    // 自分の色のコマのあるマスをクリックしたとき
     cancelSelection();
     selectedDisk = [x, y, data[y][x]];
     findOptions(x, y);
@@ -181,9 +219,7 @@ function ai_action() {
         openModal(FINISH);
       } else {
         turn *= -1;
-        turn == BLACK
-          ? (turnPart.textContent = "黒の番です")
-          : (turnPart.textContent = "白の番です");
+        showTurn();
         // ユーザの操作（クリック）を待つ
       }
     })
@@ -319,10 +355,10 @@ function openModal(dialogType) {
   if (dialogType == START) {
     startDialog.classList.remove("hide");
   } else {
-    if (winner == BLACK) {
-      result.textContent = "黒の勝ち!!";
+    if (winner == ai_color) {
+      result.textContent = "YOU LOSE...";
     } else {
-      result.textContent = "白の勝ち!!";
+      result.textContent = "YOU WIN!!";
     }
     finishDialog.classList.remove("hide");
   }
@@ -345,13 +381,23 @@ function closeModal() {
   }, 500);
 }
 
-startButton.onclick = () => {
-  closeModal();
-};
+function createTurnAnime() {
+  yourTurnAnime = turnPart.animate([{ opacity: 1 }, { opacity: 0.1 }], {
+    duration: 700,
+    direction: "alternate",
+    iterations: "Infinity",
+  });
 
-restartButton.onclick = () => {
-  closeModal();
-  setTimeout(() => {
-    init();
-  }, 500);
-};
+  aiTurnAnime = turnPart.animate(
+    [
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(360deg)" },
+    ],
+    {
+      duration: 2000,
+      easing: "linear",
+      iterations: "Infinity",
+    }
+  );
+}

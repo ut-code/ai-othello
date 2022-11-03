@@ -45,3 +45,34 @@ h2 {
 .selected {
   box-shadow: 0 0 10px yellow;
 }
+
+#modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.hide {
+  display: none;
+}
+
+.dialog {
+  padding: 50px;
+  background-color: #f4f4f4;
+  margin: 10% auto;
+  width: 40%;
+  box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 7px 20px 0 rgba(0, 0, 0, 0.17);
+  border-radius: 5px;
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    padding: 10px;
+    width: 90%;
+  }
+}

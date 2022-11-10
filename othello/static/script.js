@@ -12,7 +12,7 @@ document.querySelectorAll(".select").forEach((value) => {
   value.addEventListener("click", start);
 });
 
-if (Math.random > 0.5) {
+if (Math.random() > 0.5) {
   ai_color = WHITE;
   whichIsHuman.textContent = "あなたは黒(先手)です";
   whichIsHuman.classList.remove("human-white");
@@ -96,10 +96,10 @@ function showTurn() {
   document.getElementById("numBlack").textContent = numBlack;
   document.getElementById("numWhite").textContent = numWhite;
 
-  let blacDisk = checkReverse(BLACK);
+  let blackDisk = checkReverse(BLACK);
   let whiteDisk = checkReverse(WHITE);
 
-  if (numWhite + numBlack === cells * cells || (!blacDisk && !whiteDisk)) {
+  if (numWhite + numBlack === cells * cells || (!blackDisk && !whiteDisk)) {
     if (numBlack > numWhite) {
       document.getElementById("numBlack").textContent = numBlack + numEmpty;
       h2.textContent = "黒の勝ち!!";
@@ -117,13 +117,13 @@ function showTurn() {
     }
     return;
   }
-  if (!blacDisk && turn) {
+  if (!blackDisk && turn) {
     h2.textContent = "黒スキップ";
     showAnime();
     turn = !turn;
     setTimeout(showTurn, 2000);
     if (turn == ai_turn) {
-      ai_action();
+      setTimeout(ai_action(), 2000);
     }
     return;
   }
@@ -133,13 +133,16 @@ function showTurn() {
     turn = !turn;
     setTimeout(showTurn, 2000);
     if (turn == ai_turn) {
-      ai_action();
+      setTimeout(ai_action(), 2000);
     }
     return;
   }
 }
 
 function ai_action() {
+  if (!checkReverse(ai_color)) {
+    return;
+  }
   console.log("ai_action");
   var color = turn ? BLACK : WHITE;
   var data_to_py = [data, color]
@@ -154,7 +157,7 @@ function ai_action() {
       var px = choice[0] % cells;
       var py = Math.floor(choice[0] / cells);
       if (data[py][px] !== 0) {
-        // alert('predict error')
+        alert('predict error');
         return;
       }
       const result = checkPut(px, py, color);
@@ -163,6 +166,9 @@ function ai_action() {
           putDisc(value[0], value[1], color);
         });
         turn = !turn;
+      }
+      else {
+        alert('predict error');
       }
       showTurn();
     })
@@ -269,8 +275,8 @@ function checkReverse(color) {
   for (let x = 0; x < cells; x++) {
     for (let y = 0; y < cells; y++) {
       const result = checkPut(x, y, color);
-      console.log(result);
       if (result.length > 0) {
+        console.log(result);
         return true;
       }
     }

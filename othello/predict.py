@@ -327,14 +327,15 @@ def ai_action():
         ai_turn = request.json[1]
         pieces = [0] * 36
         enemy_pieces = [0] * 36
-        for i in range(5):
-            for j in range(5):
+        for i in range(6):
+            for j in range(6):
                 if board[i][j] == ai_turn:
                     pieces[i*6+j] = 1
                 elif board[i][j] == -ai_turn:
                     enemy_pieces[i*6+j] = 1
         state = State(pieces, enemy_pieces, 0)
         ai_action = next_action(state)
+        print(ai_action)
         return [int(ai_action)]
 
 if __name__ == "__main__":

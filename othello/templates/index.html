@@ -26,7 +26,7 @@
         <div id="numWhite"></div>
     </div>
     <p id="attention">AIの手が動かないときは盤面をクリックしてください</p>
-    <script src="http://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="../static/script.js"></script>
     <!--<script>
         "use strict";
@@ -113,10 +113,10 @@
             document.getElementById("numBlack").textContent = numBlack;
             document.getElementById("numWhite").textContent = numWhite;
 
-            let blacDisk = checkReverse(BLACK);
+            let blackDisk = checkReverse(BLACK);
             let whiteDisk = checkReverse(WHITE);
 
-            if (numWhite + numBlack === cells * cells || (!blacDisk && !whiteDisk)) {
+            if (numWhite + numBlack === cells * cells || (!blackDisk && !whiteDisk)) {
                 if (numBlack > numWhite) {
                     document.getElementById("numBlack").textContent = numBlack + numEmpty;
                     h2.textContent = "黒の勝ち!!";
@@ -134,7 +134,7 @@
                 }
                 return;
             }
-            if (!blacDisk && turn) {
+            if (!blackDisk && turn) {
                 h2.textContent = "黒スキップ";
                 showAnime();
                 turn = !turn;

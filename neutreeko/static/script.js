@@ -2,31 +2,73 @@ const BLACK = 1,
   WHITE = -1;
 const AVAILABLE = 1,
   UNAVAILABLE = 0;
+const START = 0,
+  FINISH = 1;
 let data = [];
 let options = [];
 let selectedDisk = [];
-let turn = BLACK;
-let end = false; //終了したかどうか
-// AIが先手か否か決定
-let ai_turn;
-if (Math.random() > 0.5) {
-  ai_turn = WHITE;
-} else {
-  ai_turn = BLACK;
-}
+let turn;
+let isFinished; //終了したかどうか
+
+let ai_color;
 
 const board = document.getElementById("board");
 const whichIsHuman = document.getElementById("which-is-human");
 const turnPart = document.getElementById("turn-part");
 
-if (ai_turn == BLACK) {
-  whichIsHuman.textContent = "あなたは白です";
-} else {
-  whichIsHuman.textContent = "あなたは黒です";
-}
+const modal = document.getElementById("modal");
+
+const startDialog = document.getElementById("start-dialog");
+const startButton = document.getElementById("start-button");
+
+const finishDialog = document.getElementById("finish-dialog");
+const result = document.getElementById("result");
+const restartButton = document.getElementById("restart-button");
+
 let cells = 5;
 
+let yourTurnAnime;
+let aiTurnAnime;
+createTurnAnime();
+
+startButton.onclick = () => {
+  closeModal();
+  if (ai_color == BLACK) {
+    ai_action();
+  }
+};
+
+restartButton.onclick = () => {
+  closeModal();
+  setTimeout(() => {
+    init();
+  }, 500);
+};
+
 function init() {
+  data = [];
+  options = [];
+  selectedDisk = [];
+  turn = BLACK;
+  isFinished = false;
+
+  // AIが先手か否か決定
+  if (Math.random() > 0.5) {
+    ai_color = WHITE;
+    whichIsHuman.textContent = "あなたは黒(先手)です";
+    whichIsHuman.classList.remove("human-white");
+    whichIsHuman.classList.add("human-black");
+    board.classList.remove("reverse"); //反転を解除
+  } else {
+    ai_color = BLACK;
+    whichIsHuman.textContent = "あなたは白(後手)です";
+    whichIsHuman.classList.remove("human-black");
+    whichIsHuman.classList.add("human-white");
+    board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
+  }
+
+  //盤面を作成
+  board.innerHTML = "";
   for (let i = 0; i < cells; i++) {
     const tr = document.createElement("tr");
     data[i] = Array(cells).fill(0);
@@ -43,30 +85,28 @@ function init() {
     }
     board.appendChild(tr);
   }
-  addDisc(1, 0, WHITE);
-  addDisc(3, 0, WHITE);
-  addDisc(2, 1, BLACK);
+  addDisk(1, 0, WHITE);
+  addDisk(3, 0, WHITE);
+  addDisk(2, 1, BLACK);
 
-  addDisc(2, 3, WHITE);
-  addDisc(1, 4, BLACK);
-  addDisc(3, 4, BLACK);
+  addDisk(2, 3, WHITE);
+  addDisk(1, 4, BLACK);
+  addDisk(3, 4, BLACK);
 
-  turn == BLACK
-    ? (turnPart.textContent = "黒の番です")
-    : (turnPart.textContent = "白の番です");
+  showTurn();
+
   render();
-  if (ai_turn == BLACK) {
-    ai_action();
-  }
+  openModal(START);
 }
 
 init();
 
+// 描画
 function render() {
   for (let x = 0; x < cells; x++) {
     for (let y = 0; y < cells; y++) {
       if (options[y][x] == UNAVAILABLE) {
-        board.rows[y].cells[x].classList.remove("blue");
+        board.rows[y].cells[x].classList.remove("options");
         board.rows[y].cells[x].classList.add("green");
         if (data[y][x] == BLACK) {
           board.rows[y].cells[x].firstChild.classList.remove("white");
@@ -80,29 +120,82 @@ function render() {
         }
       } else {
         board.rows[y].cells[x].classList.remove("green");
-        board.rows[y].cells[x].classList.add("blue");
+        board.rows[y].cells[x].classList.add("options");
+      }
+      if (
+        JSON.stringify([selectedDisk[0], selectedDisk[1]]) !=
+        JSON.stringify([x, y])
+      ) {
+        board.rows[y].cells[x].firstChild.classList.remove("selected");
+      } else {
+        board.rows[y].cells[x].firstChild.classList.add("selected");
       }
     }
   }
 }
 
-function addDisc(x, y, color) {
-  data[y][x] = color;
-}
-
-function removeDisc(x, y) {
-  data[y][x] = 0;
-}
-
-function transfer(destination) {
-  removeDisc(selectedDisk[0], selectedDisk[1]);
-  addDisc(destination[0], destination[1], selectedDisk[2]);
-  // 選択肢の表示を解除
-  for (let i = 0; i < cells; i++) {
-    options[i] = Array(cells).fill(0);
+//手番を表示
+function showTurn() {
+  yourTurnAnime.cancel();
+  aiTurnAnime.cancel();
+  if (turn == ai_color) {
+    turnPart.textContent = "AIの番です";
+    aiTurnAnime.play();
+  } else {
+    turnPart.textContent = "あなたの番です";
+    yourTurnAnime.play();
   }
 }
 
+// (x, y) にcolor色のコマを追加
+function addDisk(x, y, color) {
+  data[y][x] = color;
+}
+
+// (x, y)からコマを削除
+function removeDisk(x, y) {
+  data[y][x] = 0;
+}
+
+// コマを目的地に移動
+function transfer(destination) {
+  removeDisk(selectedDisk[0], selectedDisk[1]);
+  addDisk(destination[0], destination[1], selectedDisk[2]);
+  cancelSelection();
+}
+
+// ユーザーがクリックした際の動作
+function tdClicked() {
+  if (isFinished) return;
+  const y = this.parentNode.rowIndex;
+  const x = this.cellIndex;
+
+  if (options[y][x] == AVAILABLE) {
+    //選択候補をクリックしたとき
+    transfer([x, y]);
+    render();
+    judge();
+    if (isFinished) {
+      openModal(FINISH);
+    } else {
+      turn *= -1;
+      showTurn();
+      ai_action();
+    }
+  } else if (data[y][x] == turn) {
+    // 自分の色のコマのあるマスをクリックしたとき
+    cancelSelection();
+    selectedDisk = [x, y, data[y][x]];
+    findOptions(x, y);
+    render();
+  } else {
+    // 選択候補でなく、操作可能なコマもないマスをクリックしたとき
+    cancelSelection();
+    render();
+  }
+}
+
+// AIの動作
 function ai_action() {
   console.log("ai_action");
   data_to_py = [data, turn];
@@ -116,60 +209,37 @@ function ai_action() {
     .done(function (action) {
       var fromY = Math.floor(action[0] / 5);
       var fromX = action[0] % 5;
-      var toY = Math.floor(action[1] / 5)
+      var toY = Math.floor(action[1] / 5);
       var toX = action[1] % 5;
-      removeDisc(fromX, fromY);
-      addDisc(toX, toY, turn);
+      removeDisk(fromX, fromY);
+      addDisk(toX, toY, turn);
       render();
       judge();
-      turn *= -1;
-      turn == BLACK
-        ? (turnPart.textContent = "黒の番です")
-        : (turnPart.textContent = "白の番です");
+      if (isFinished) {
+        openModal(FINISH);
+      } else {
+        turn *= -1;
+        showTurn();
+        // ユーザの操作（クリック）を待つ
+      }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
-      console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
+      console.log("textStatus     : " + textStatus); // タイムアウト、パースエラー
       console.log("errorThrown    : " + errorThrown.message); // 例外情報
-      alert('ajax error');
+      alert("ajax error");
     });
 }
 
-function tdClicked() {
-  if (turn == ai_turn || end)
-    return;
-  const y = this.parentNode.rowIndex;
-  const x = this.cellIndex;
-
-  if (options[y][x] == 1) {
-    //選択候補をクリックしたとき
-    transfer([x, y]);
-    render();
-    end = judge();
-    turn *= -1;
-    turn == BLACK
-      ? (turnPart.textContent = "黒の番です")
-      : (turnPart.textContent = "白の番です");
-    if (!end)
-      ai_action();
-  } else if (data[y][x] == turn) {
-    // 自分のターンで操作可能なコマのあるマスをクリックしたとき
-    for (let i = 0; i < cells; i++) {
-      options[i] = Array(cells).fill(0);
-    }
-    selectedDisk = [x, y, data[y][x]];
-    findOptions(x, y);
-    render();
-  } else {
-    // 選択候補でなく、操作可能なコマもないマスをクリックしたとき
-    // 選択肢の表示を解除
-    for (let i = 0; i < cells; i++) {
-      options[i] = Array(cells).fill(0);
-    }
-    render();
+// 移動先候補の状態・選択されたコマの状態を解除
+function cancelSelection() {
+  for (let i = 0; i < cells; i++) {
+    options[i] = Array(cells).fill(0);
   }
+  selectedDisk = [];
 }
 
+// (x, y)から到達可能な移動先を全て見つける
 function findOptions(x, y) {
   for (let i of [-1, 0, 1]) {
     for (let j of [-1, 0, 1]) {
@@ -182,6 +252,8 @@ function findOptions(x, y) {
   }
 }
 
+// (x0, y0)からある一方向(dx, dy)についての到達可能な移動先を一つ見つける
+// 到達可能な移動先がない場合、元の場所(x0, y0)の座標を返す
 function findOption(x0, y0, dx, dy) {
   if (dx == 0 && dy == 0) {
     // dx=0, dy=0のとき、移動方向が定義できないため移動先の選択肢はなし
@@ -200,6 +272,7 @@ function findOption(x0, y0, dx, dy) {
   }
 }
 
+// (x, y)が空いていてかつ範囲内にあるマスかを判断
 function isReachable(x, y) {
   if (y >= cells || x >= cells || y <= -1 || x <= -1) {
     // 盤の範囲外の場合、到達不可
@@ -213,23 +286,24 @@ function isReachable(x, y) {
   }
 }
 
+// 勝敗を判断
 function judge() {
   const blacks = document.querySelectorAll(".black");
   const whites = document.querySelectorAll(".white");
 
   if (isBingo(blacks)) {
-    setTimeout(() => {
-      alert("黒の勝ち!!");
-    }, 100);
-    return true;
+    winner = BLACK;
+    isFinished = true;
+    return;
   } else if (isBingo(whites)) {
-    setTimeout(() => {
-      alert("白の勝ち!!");
-    }, 100);
-    return true;
+    winner = WHITE;
+    isFinished = true;
+    return;
   }
-  return false;
+  isFinished = false;
+  return;
 
+  // 縦 or 横 or 斜め に3つそろっているところがあるか判断
   function isBingo(disks) {
     let xResult = [];
     let yResult = [];
@@ -274,4 +348,56 @@ function judge() {
       return false;
     }
   }
+}
+
+// アニメーション
+function openModal(dialogType) {
+  if (dialogType == START) {
+    startDialog.classList.remove("hide");
+  } else {
+    if (winner == ai_color) {
+      result.textContent = "YOU LOSE...";
+    } else {
+      result.textContent = "YOU WIN!!";
+    }
+    finishDialog.classList.remove("hide");
+  }
+  modal.classList.remove("hide");
+  modal.animate([{ opacity: 0 }, { opacity: 1 }], {
+    duration: 500,
+    fill: "forwards",
+  });
+}
+
+function closeModal() {
+  modal.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: 500,
+    fill: "forwards",
+  });
+  setTimeout(() => {
+    modal.classList.add("hide");
+    startDialog.classList.add("hide");
+    finishDialog.classList.add("hide");
+  }, 500);
+}
+
+function createTurnAnime() {
+  yourTurnAnime = turnPart.animate([{ opacity: 1 }, { opacity: 0.1 }], {
+    duration: 700,
+    direction: "alternate",
+    iterations: "Infinity",
+  });
+
+  aiTurnAnime = turnPart.animate(
+    [
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(360deg)" },
+    ],
+    {
+      duration: 2000,
+      easing: "linear",
+      iterations: "Infinity",
+    }
+  );
 }

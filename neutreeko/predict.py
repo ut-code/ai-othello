@@ -288,5 +288,5 @@ def ai_action():
         return [int(ai_action_position[0]), int(ai_action_position[1])]
 
 
-# if __name__ == "__main__":
-#    app.run()
+if __name__ == "__main__":
+   app.run()

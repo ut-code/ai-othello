@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>othello</title>
-    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/style.css">
 </head>
 
 <body>
@@ -16,8 +16,8 @@
             </div>
     </div>
     <div id="restartBtn" class="hide">クリックするとスタート画面に戻ります</div>
+    <p id="which-is-human"></p>
     <div id="content">
-
         <table id="board"></table>
     </div>
     <div id="counter" class="hide">
@@ -27,13 +27,15 @@
     </div>
     <p id="attention">AIの手が動かないときは盤面をクリックしてください</p>
     <script src="http://code.jquery.com/jquery-3.3.1.js"></script>
-    <script>
+    <script src="../static/script.js"></script>
+    <!--<script>
         "use strict";
 
         const BLACK = 1,
             WHITE = -1;
         let data = [];
         let turn = true;
+        let ai_color = -1;
         const board = document.getElementById("board");
         const h2 = document.querySelector("h2");
         const counter = document.getElementById("counter");
@@ -42,13 +44,16 @@
             value.addEventListener("click", start);
         });
 
-        let cells = 8; // マスの数
+        let cells = 6; // マスの数
 
         function start(e) {
-            cells = 8;
+            cells = 6;
             board.innerHTML = "";
             init();
             modal.classList.add("hide");
+            if (ai_color == BLACK) {
+                ai_action();
+            }
         }
 
         // 初期化
@@ -66,10 +71,10 @@
                 }
                 board.appendChild(tr);
             }
+            putDisc(2, 2, WHITE);
             putDisc(3, 3, WHITE);
-            putDisc(4, 4, WHITE);
-            putDisc(3, 4, BLACK);
-            putDisc(4, 3, BLACK);
+            putDisc(2, 3, BLACK);
+            putDisc(3, 2, BLACK);
             showTurn();
         }
 
@@ -88,7 +93,7 @@
 
         // 手番などの表示
         function showTurn() {
-            h2.textContent = turn ? "AIの番です" : "あなたの番です";
+            h2.textContent = turn ? "黒の番です" : "白の番です";
             let numWhite = 0,
                 numBlack = 0,
                 numEmpty = 0;
@@ -114,12 +119,12 @@
             if (numWhite + numBlack === cells * cells || (!blacDisk && !whiteDisk)) {
                 if (numBlack > numWhite) {
                     document.getElementById("numBlack").textContent = numBlack + numEmpty;
-                    h2.textContent = "AIの勝ち!!";
+                    h2.textContent = "黒の勝ち!!";
                     restartBtn();
                     showAnime();
                 } else if (numBlack < numWhite) {
                     document.getElementById("numWhite").textContent = numWhite + numEmpty;
-                    h2.textContent = "あなたの勝ち!!";
+                    h2.textContent = "白の勝ち!!";
                     restartBtn();
                     showAnime();
                 } else {
@@ -130,19 +135,58 @@
                 return;
             }
             if (!blacDisk && turn) {
-                h2.textContent = "AIスキップ";
+                h2.textContent = "黒スキップ";
                 showAnime();
                 turn = !turn;
                 setTimeout(showTurn, 2000);
+                if (turn == ai_turn) {
+                    ai_action();
+                }
                 return;
             }
             if (!whiteDisk && !turn) {
-                h2.textContent = "あなたスキップ";
+                h2.textContent = "白スキップ";
                 showAnime();
                 turn = !turn;
                 setTimeout(showTurn, 2000);
+                if (turn == ai_turn) {
+                    ai_action();
+                }
                 return;
             }
+        }
+
+        function ai_action() {
+            console.log("ai_action");
+            var color = turn ? BLACK : WHITE;
+            var data_to_py = [data, color]
+            var json = JSON.stringify(data_to_py)
+            $.ajax({
+                type: "POST",
+                url: "/predict/",
+                data: json,
+                contentType: "application/json",
+            })
+                .done(function (choice) {
+                    var px = choice[0] % cells;
+                    var py = Math.floor(choice[0] / cells);
+                    if (data[py][px] !== 0) {
+                        // alert('predict error')
+                        return;
+                    }
+                    const result = checkPut(px, py, color);
+                    if (result.length > 0) {
+                        result.forEach((value) => {
+                            putDisc(value[0], value[1], color);
+                        });
+                        turn = !turn;
+                    }
+                    showTurn();
+                })
+                .fail(function () {
+                    alert('ajax error')
+                });
+
         }
 
         // マスがクリックされた時の処理
@@ -150,35 +194,8 @@
             var color = turn ? BLACK : WHITE;
             const y = this.parentNode.rowIndex;
             const x = this.cellIndex;
-            if (color == BLACK) {
-                //dataをpredict.pyに渡す
-                // alert('black')
-                var json = JSON.stringify(data)
-                $.ajax({
-                    type: "POST",
-                    url: "/predict",
-                    data: json,
-                    contentType: "application/json",
-                })
-                    .done(function (choice) {
-                        var px = choice[0] % 8;
-                        var py = Math.floor(choice[0] / 8);
-                        if (data[py][px] !== 0) {
-                            // alert('predict error')
-                            return;
-                        }
-                        const result = checkPut(px, py, color);
-                        if (result.length > 0) {
-                            result.forEach((value) => {
-                                putDisc(value[0], value[1], color);
-                            });
-                            turn = !turn;
-                        }
-                        showTurn();
-                    })
-                    .fail(function () {
-                        alert('ajax error')
-                    });
+            if (color == ai_color) {
+                return;
             }
             else {
                 // マスに置けるかチェック
@@ -192,36 +209,12 @@
                     });
                     turn = !turn;
                     color = turn ? BLACK : WHITE
-
-                    var json = JSON.stringify(data)
-                    $.ajax({
-                        type: "POST",
-                        url: "/predict",
-                        data: json,
-                        contentType: "application/json",
-                    })
-                        .done(function (choice) {
-                            var px = choice[0] % 8;
-                            var py = Math.floor(choice[0] / 8);
-                            if (data[py][px] !== 0) {
-                                // alert('predict error')
-                                return;
-                            }
-                            const result = checkPut(px, py, color);
-                            if (result.length > 0) {
-                                result.forEach((value) => {
-                                    putDisc(value[0], value[1], color);
-                                });
-                                turn = !turn;
-                            }
-                            showTurn();
-                        })
-                        .fail(function () {
-                            alert('ajax error')
-                        });
-
+                    showTurn();
+                    ai_action();
                 }
-                showTurn();
+                else {
+                    return;
+                }
             }
         }
 
@@ -318,7 +311,7 @@
         function showAnime() {
             h2.animate({ opacity: [0, 1] }, { duration: 500, iterations: 4 });
         }
-    </script>
+    </script>-->
 </body>
 
 </html>

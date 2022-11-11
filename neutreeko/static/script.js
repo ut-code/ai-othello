@@ -166,7 +166,7 @@ function transfer(destination) {
 
 // ユーザーがクリックした際の動作
 function tdClicked() {
-  if (isFinished) return;
+  if (isFinished || ai_color == turn) return;
   const y = this.parentNode.rowIndex;
   const x = this.cellIndex;
 

@@ -9,13 +9,14 @@
 </head>
 
 <body>
-    <div id="modal">
+    <!--<div id="modal">
         <h3>オセロ</h2>
             <div id="menu">
                 <p class="select">スタート</p>
             </div>
-    </div>
-    <div id="restartBtn" class="hide">クリックするとスタート画面に戻ります</div>
+    </div>-->
+    <!--<div id="restartBtn" class="hide">クリックするとスタート画面に戻ります</div>-->
+    <p id="turn-part"></p>
     <p id="which-is-human"></p>
     <div id="content">
         <table id="board"></table>
@@ -25,7 +26,17 @@
         <h2></h2>
         <div id="numWhite"></div>
     </div>
-    <p id="attention">AIの手が動かないときは盤面をクリックしてください</p>
+    <div id="modal">
+        <div id="start-dialog" class="dialog hide">
+          <h1>Let's play 6x6 reversi!!</h1>
+          <button id="start-button">プレイする</button>
+        </div>
+        <div id="finish-dialog" class="dialog hide">
+          <h1 id="result"></h1>
+          <button id="restart-button">トップに戻る</button>
+        </div>
+    </div>
+    <!--<p id="attention">AIの手が動かないときは盤面をクリックしてください</p>-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="../static/script.js"></script>
     <!--<script>

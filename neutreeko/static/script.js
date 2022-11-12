@@ -25,11 +25,14 @@ const finishDialog = document.getElementById("finish-dialog");
 const result = document.getElementById("result");
 const restartButton = document.getElementById("restart-button");
 
+const stone = document.getElementById('circle');
+
 let cells = 5;
 
 let yourTurnAnime;
 let aiTurnAnime;
 createTurnAnime();
+
 
 startButton.onclick = () => {
   closeModal();
@@ -76,7 +79,7 @@ function init() {
     for (let j = 0; j < cells; j++) {
       const td = document.createElement("td");
       const disk = document.createElement("div");
-      tr.appendChild(td);
+      tr.appendChild(td); 
       td.appendChild(disk);
       td.className = "cell";
       disk.className = "disk";
@@ -157,11 +160,46 @@ function removeDisk(x, y) {
   data[y][x] = 0;
 }
 
+function Sleep(interval){
+  let start = new Date();
+  while(new Date() - start < interval);
+}
+
+
 // コマを目的地に移動
 function transfer(destination) {
   removeDisk(selectedDisk[0], selectedDisk[1]);
-  addDisk(destination[0], destination[1], selectedDisk[2]);
+  let element = board.rows[selectedDisk[1]].cells[selectedDisk[0]];
+  let result = element.getBoundingClientRect();
+  stone.style.top = result.top + 6 + "px";
+  stone.style.left = result.left + 6 + "px";
+  render();
+  Sleep(100);
+  let stonecolor;
+  if (selectedDisk[2] == BLACK){
+    stonecolor = "#000000";
+  }else{
+    stonecolor = "#ffffff";
+  }
+  let animation = anime({
+    targets: '#circle',
+    translateX: 50*(destination[0]-selectedDisk[0]),
+    translateY: 50*(destination[1]-selectedDisk[1]),
+    backgroundColor: stonecolor,
+    duration: 2500
+  });
+  animation.play();
+  console.log(stone.style.backgroundColor);
+  console.log("result" + result.top +" " + result.left);
+  
+ /* stone.style.backgroundColor = 'red';
+  stone.style.position = 'absolute';
+  stone.style.top = result.top + 'px';
+  stone.style.left = result.left + 'px';*/
+  color = selectedDisk[2];
   cancelSelection();
+  addDisk(destination[0], destination[1], color);
+  render();
 }
 
 // ユーザーがクリックした際の動作
@@ -401,3 +439,4 @@ function createTurnAnime() {
     }
   );
 }
+

@@ -285,7 +285,7 @@ function ai_action() {
   if (!checkReverse(ai_color)) {
     return;
   }
-  console.log("ai_action");
+  // console.log("ai_action");
   var color = turn ? BLACK : WHITE;
   var data_to_py = [data, color]
   var json = JSON.stringify(data_to_py)
@@ -434,7 +434,7 @@ function openModal(dialogType) {
     } else if (winner == ai_color * (-1)) {
       result.textContent = "YOU WIN!!";
     } else {
-      result.textContent = "DRAW!!";
+      result.textContent = "DRAW";
     }
     finishDialog.classList.remove("hide");
   }

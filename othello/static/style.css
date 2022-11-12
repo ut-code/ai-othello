@@ -8,13 +8,14 @@ main {
 
 /* start */
 #modal {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  z-index: 1;
   left: 0;
-  width: 100%;
+  top: 0;
   height: 100%;
-  background: rgba(31, 19, 19, 0.8);
-  color: white;
+  width: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 #which-is-human.human-black {
@@ -24,6 +25,10 @@ main {
   border: 1px solid black;
   border-radius: 5px;
   background-color: black;
+}
+
+#turn-part {
+  color: black;
 }
 
 #which-is-human.human-white {
@@ -100,7 +105,7 @@ h2 {
 }
 #counter {
   margin: 0 auto;
-  width: 400px;
+  width: 300px;
   display: flex;
   line-height: 50px;
   font-weight: bold;
@@ -143,6 +148,26 @@ h2 {
 .hide {
   display: none;
 }
+
+.dialog {
+  padding: 50px;
+  background-color: #f4f4f4;
+  margin: 10% auto;
+  width: 40%;
+  box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2), 0 7px 20px 0 rgba(0, 0, 0, 0.17);
+  border-radius: 5px;
+}
+
 #attention {
   color: black;
+}
+#modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.75);
 }

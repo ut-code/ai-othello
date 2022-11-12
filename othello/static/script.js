@@ -1,16 +1,33 @@
 const BLACK = 1,
-  WHITE = -1;
+  WHITE = -1.
+  DRAW = 0;
 let data = [];
 let turn = true;
 let ai_color;
+let winner;
 const board = document.getElementById("board");
 const whichIsHuman = document.getElementById("which-is-human");
+const turnPart = document.getElementById("turn-part");
 const h2 = document.querySelector("h2");
 const counter = document.getElementById("counter");
+
+const START = 0,
+  FINISH = 1;
 const modal = document.getElementById("modal");
-document.querySelectorAll(".select").forEach((value) => {
-  value.addEventListener("click", start);
-});
+
+const startDialog = document.getElementById("start-dialog");
+const startButton = document.getElementById("start-button");
+
+const finishDialog = document.getElementById("finish-dialog");
+const result = document.getElementById("result");
+const restartButton = document.getElementById("restart-button");
+
+let yourTurnAnime;
+let aiTurnAnime;
+createTurnAnime();
+// document.querySelectorAll(".select").forEach((value) => {
+//   value.addEventListener("click", start);
+// });
 
 if (Math.random() > 0.5) {
   ai_color = WHITE;
@@ -29,15 +46,30 @@ if (Math.random() > 0.5) {
 
 let cells = 6; // マスの数
 
-function start(e) {
-  cells = 6;
-  board.innerHTML = "";
-  init();
-  modal.classList.add("hide");
+startButton.onclick = () => {
+  closeModal();
   if (ai_color == BLACK) {
     ai_action();
   }
-}
+};
+
+restartButton.onclick = () => {
+  closeModal();
+  setTimeout(() => {
+    init();
+  }, 500);
+};
+
+// function start(e) {
+//   closeModal();
+//   cells = 6;
+//   board.innerHTML = "";
+//   init();
+//   modal.classList.add("hide");
+//   if (ai_color == BLACK) {
+//     ai_action();
+//   }
+// }
 
 // 初期化
 function init() {
@@ -59,6 +91,7 @@ function init() {
   putDisc(2, 3, BLACK);
   putDisc(3, 2, BLACK);
   showTurn();
+  openModal(START);
 }
 
 init();
@@ -76,7 +109,15 @@ function putDisc(x, y, color) {
 
 // 手番などの表示
 function showTurn() {
-  h2.textContent = turn ? "黒の番です" : "白の番です";
+  yourTurnAnime.cancel();
+  aiTurnAnime.cancel();
+  var color = turn ? BLACK : WHITE;
+  turnPart.textContent = color == ai_color ? "AIの番です" : "あなたの番です";
+  if (color == ai_color) {
+    aiTurnAnime.play()
+  } else {
+   yourTurnAnime.play();
+  }
   let numWhite = 0,
     numBlack = 0,
     numEmpty = 0;
@@ -101,38 +142,46 @@ function showTurn() {
 
   if (numWhite + numBlack === cells * cells || (!blackDisk && !whiteDisk)) {
     if (numBlack > numWhite) {
+      winner = BLACK;
+      openModal(FINISH);
       document.getElementById("numBlack").textContent = numBlack + numEmpty;
-      h2.textContent = "黒の勝ち!!";
-      restartBtn();
-      showAnime();
+      //turnPart.textContent = color == ai_color ? "AIの勝ち!!" : "あなたの勝ち!!";
+      //restartBtn();
+      //showAnime();
     } else if (numBlack < numWhite) {
+      winner = WHITE;
+      openModal(FINISH);
       document.getElementById("numWhite").textContent = numWhite + numEmpty;
-      h2.textContent = "白の勝ち!!";
-      restartBtn();
-      showAnime();
+      //turnPart.textContent = color == ai_color ? "AIの勝ち!!" : "あなたの勝ち!!";
+      //restartBtn();
+      //showAnime();
     } else {
-      h2.textContent = "引き分け";
-      restartBtn();
-      showAnime();
+      winner = DRAW;
+      openModal(FINISH);
+      //turnPart.textContent = "引き分け";
+      //restartBtn();
+      //showAnime();
     }
     return;
   }
   if (!blackDisk && turn) {
-    h2.textContent = "黒スキップ";
-    showAnime();
+    turnPart.textContent = color == ai_color ? "AIスキップ" : "あなたスキップ";
+    //showAnime();
     turn = !turn;
+    color = WHITE;
     setTimeout(showTurn, 2000);
-    if (turn == ai_turn) {
+    if (color == ai_color) {
       setTimeout(ai_action(), 2000);
     }
     return;
   }
   if (!whiteDisk && !turn) {
-    h2.textContent = "白スキップ";
-    showAnime();
+    turnPart.textContent = color == ai_color ? "AIスキップ" : "あなたスキップ";
+    //showAnime();
     turn = !turn;
+    color = BLACK;
     setTimeout(showTurn, 2000);
-    if (turn == ai_turn) {
+    if (color == ai_turn) {
       setTimeout(ai_action(), 2000);
     }
     return;
@@ -284,19 +333,74 @@ function checkReverse(color) {
   return false;
 }
 
-// ゲーム終了画面
-function restartBtn() {
-  const restartBtn = document.getElementById("restartBtn");
-  restartBtn.classList.remove("hide");
-  restartBtn.animate(
-    { opacity: [1, 0.5, 1] },
-    { delay: 2000, duration: 3000, iterations: "Infinity" }
-  );
+function createTurnAnime() {
+  yourTurnAnime = turnPart.animate([{ opacity: 1 }, { opacity: 0.1 }], {
+    duration: 700,
+    direction: "alternate",
+    iterations: "Infinity",
+  });
 
-  restartBtn.addEventListener("click", () => {
-    document.location.reload();
+  aiTurnAnime = turnPart.animate(
+    [
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(0deg)" },
+      { transform: "rotateX(360deg)" },
+    ],
+    {
+      duration: 2000,
+      easing: "linear",
+      iterations: "Infinity",
+    }
+  );
+}
+
+// アニメーション
+function openModal(dialogType) {
+  if (dialogType == START) {
+    startDialog.classList.remove("hide");
+  } else {
+    if (winner == ai_color) {
+      result.textContent = "YOU LOSE...";
+    } else if (winner == ai_color * (-1)) {
+      result.textContent = "YOU WIN!!";
+    } else {
+      result.textContent = "DRAW!!";
+    }
+    finishDialog.classList.remove("hide");
+  }
+  modal.classList.remove("hide");
+  modal.animate([{ opacity: 0 }, { opacity: 1 }], {
+    duration: 500,
+    fill: "forwards",
   });
 }
-function showAnime() {
-  h2.animate({ opacity: [0, 1] }, { duration: 500, iterations: 4 });
+
+function closeModal() {
+  modal.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: 500,
+    fill: "forwards",
+  });
+  setTimeout(() => {
+    modal.classList.add("hide");
+    startDialog.classList.add("hide");
+    finishDialog.classList.add("hide");
+  }, 500);
 }
+
+
+// ゲーム終了画面
+// function restartBtn() {
+//   const restartBtn = document.getElementById("restartBtn");
+//   restartBtn.classList.remove("hide");
+//   restartBtn.animate(
+//     { opacity: [1, 0.5, 1] },
+//     { delay: 2000, duration: 3000, iterations: "Infinity" }
+//   );
+
+//   restartBtn.addEventListener("click", () => {
+//     document.location.reload();
+//   });
+// }
+// function showAnime() {
+//   turnPart.animate({ opacity: [0, 1] }, { duration: 500, iterations: 4 });
+// }

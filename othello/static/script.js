@@ -29,24 +29,6 @@ const restartButton = document.getElementById("restart-button");
 let yourTurnAnime;
 let aiTurnAnime;
 createTurnAnime();
-// document.querySelectorAll(".select").forEach((value) => {
-//   value.addEventListener("click", start);
-// });
-
-// if (Math.random() > 0.5) {
-//   ai_color = WHITE;
-//   whichIsHuman.textContent = "あなたは黒(先手)です";
-//   whichIsHuman.classList.remove("human-white");
-//   whichIsHuman.classList.add("human-black");
-//   board.classList.remove("reverse"); //反転を解除
-// } else
-// {
-//   ai_color = BLACK;
-//   whichIsHuman.textContent = "あなたは白(後手)です";
-//   whichIsHuman.classList.remove("human-black");
-//   whichIsHuman.classList.add("human-white");
-//   board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
-// }
 
 let cells = 6; // マスの数
 

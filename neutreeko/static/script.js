@@ -25,11 +25,15 @@ const finishDialog = document.getElementById("finish-dialog");
 const result = document.getElementById("result");
 const restartButton = document.getElementById("restart-button");
 
+const stone = document.getElementById('circle');
+stone.classList.add("hide");
+
 let cells = 5;
 
 let yourTurnAnime;
 let aiTurnAnime;
 createTurnAnime();
+
 
 startButton.onclick = () => {
   closeModal();
@@ -64,7 +68,6 @@ function init() {
     whichIsHuman.textContent = "あなたは白(後手)です";
     whichIsHuman.classList.remove("human-black");
     whichIsHuman.classList.add("human-white");
-    board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
   }
 
   //盤面を作成
@@ -76,7 +79,7 @@ function init() {
     for (let j = 0; j < cells; j++) {
       const td = document.createElement("td");
       const disk = document.createElement("div");
-      tr.appendChild(td);
+      tr.appendChild(td); 
       td.appendChild(disk);
       td.className = "cell";
       disk.className = "disk";
@@ -157,11 +160,67 @@ function removeDisk(x, y) {
   data[y][x] = 0;
 }
 
+function Sleep(interval){
+  let start = new Date();
+  while(new Date() - start < interval);
+}
+
+
 // コマを目的地に移動
 function transfer(destination) {
   removeDisk(selectedDisk[0], selectedDisk[1]);
-  addDisk(destination[0], destination[1], selectedDisk[2]);
+  let element = board.rows[selectedDisk[1]].cells[selectedDisk[0]];
+  let result = element.getBoundingClientRect();
+  stone.style.top = result.top + 6 + "px";
+  stone.style.left = result.left + 6 + "px";
+  let stonecolor;
+  if (selectedDisk[2] == BLACK){
+    stonecolor = "#000000";
+  }else{
+    stonecolor = "#ffffff";
+  }
+
+  stone.style.backgroundColor = stonecolor;
+  stone.classList.remove("hide");
+  render();
+  /*let animations = anime({
+    targets: '#circle',
+    translateX: 50*(destination[0]-selectedDisk[0]),
+    translateY: 50*(destination[1]-selectedDisk[1]),
+    backgroundColor: stonecolor,
+    duration: 5000
+  });
+
+  animations.play();
+  interval = 5000;
+  let start = new Date();
+  cnt = 0;
+  while(new Date() - start < interval);
+  console.log(stone.style.backgroundColor);
+  console.log("result" + result.top +" " + result.left);*/
+  let StoneAnime = stone.animate(
+    [
+      { transform: "translate(0px,0px)" },
+      { transform: `translate(${50*(destination[0]-selectedDisk[0])}px, ${50*(destination[1]-selectedDisk[1])}px) ` }
+    ],
+    {
+      duration: 500,
+      easing: "linear"
+    }
+  );
+  color = selectedDisk[2];
+  setTimeout(function(){
+    stone.classList.add("hide");
+    render();
+  },500);
+ /* stone.style.backgroundColor = 'red';
+  stone.style.position = 'absolute';
+  stone.style.top = result.top + 'px';
+  stone.style.left = result.left + 'px';*/
+  addDisk(destination[0], destination[1], color);
+  
   cancelSelection();
+  
 }
 
 // ユーザーがクリックした際の動作
@@ -173,7 +232,6 @@ function tdClicked() {
   if (options[y][x] == AVAILABLE) {
     //選択候補をクリックしたとき
     transfer([x, y]);
-    render();
     judge();
     if (isFinished) {
       openModal(FINISH);
@@ -209,11 +267,12 @@ function ai_action() {
     .done(function (action) {
       var fromY = Math.floor(action[0] / 5);
       var fromX = action[0] % 5;
+      selectedDisk[0] = fromX;
+      selectedDisk[1] = fromY;
+      selectedDisk[2] = turn;
       var toY = Math.floor(action[1] / 5);
       var toX = action[1] % 5;
-      removeDisk(fromX, fromY);
-      addDisk(toX, toY, turn);
-      render();
+      transfer([toX, toY]);
       judge();
       if (isFinished) {
         openModal(FINISH);
@@ -288,7 +347,7 @@ function isReachable(x, y) {
 
 // 勝敗を判断
 function judge() {
-  const blacks = document.querySelectorAll(".black");
+  /*const blacks = document.querySelectorAll(".black");
   const whites = document.querySelectorAll(".white");
 
   if (isBingo(blacks)) {
@@ -299,12 +358,31 @@ function judge() {
     winner = WHITE;
     isFinished = true;
     return;
+  }*/
+  let dir = [[1,-1],[1,0],[1,1],[0,1]];
+  let dy, dx;
+  for(let i = 0;i < 5;i++){
+    for(let j = 0;j < 5;j++){
+      if(data[i][j] == turn){
+        for (let k = 0; k < 4; k++) {
+          dy = dir[k][0];
+          dx = dir[k][1];
+          if (i+2*dy < 0 || 4 < i+2*dy || j+2*dx < 0 || 4 < j+2*dx || data[i+dy][j+dx] != turn || data[i+2*dy][j+2*dx] != turn){
+            continue;
+          } else {
+            winner = turn;
+            isFinished = true;
+            return;
+          }
+        }
+      }
+    }
   }
   isFinished = false;
   return;
-
+}
   // 縦 or 横 or 斜め に3つそろっているところがあるか判断
-  function isBingo(disks) {
+/*  function isBingo(disks) {
     let xResult = [];
     let yResult = [];
     for (let disk of disks) {
@@ -348,7 +426,7 @@ function judge() {
       return false;
     }
   }
-}
+}*/
 
 // アニメーション
 function openModal(dialogType) {
@@ -401,3 +479,4 @@ function createTurnAnime() {
     }
   );
 }
+

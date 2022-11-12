@@ -29,20 +29,20 @@ createTurnAnime();
 //   value.addEventListener("click", start);
 // });
 
-if (Math.random() > 0.5) {
-  ai_color = WHITE;
-  whichIsHuman.textContent = "あなたは黒(先手)です";
-  whichIsHuman.classList.remove("human-white");
-  whichIsHuman.classList.add("human-black");
-  board.classList.remove("reverse"); //反転を解除
-} else
-{
-  ai_color = BLACK;
-  whichIsHuman.textContent = "あなたは白(後手)です";
-  whichIsHuman.classList.remove("human-black");
-  whichIsHuman.classList.add("human-white");
-  board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
-}
+// if (Math.random() > 0.5) {
+//   ai_color = WHITE;
+//   whichIsHuman.textContent = "あなたは黒(先手)です";
+//   whichIsHuman.classList.remove("human-white");
+//   whichIsHuman.classList.add("human-black");
+//   board.classList.remove("reverse"); //反転を解除
+// } else
+// {
+//   ai_color = BLACK;
+//   whichIsHuman.textContent = "あなたは白(後手)です";
+//   whichIsHuman.classList.remove("human-black");
+//   whichIsHuman.classList.add("human-white");
+//   board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
+// }
 
 let cells = 6; // マスの数
 
@@ -73,6 +73,23 @@ restartButton.onclick = () => {
 
 // 初期化
 function init() {
+  if (Math.random() > 0.5) {
+    ai_color = WHITE;
+    whichIsHuman.textContent = "あなたは黒(先手)です";
+    whichIsHuman.classList.remove("human-white");
+    whichIsHuman.classList.add("human-black");
+    board.classList.remove("reverse"); //反転を解除
+  } else
+  {
+    ai_color = BLACK;
+    whichIsHuman.textContent = "あなたは白(後手)です";
+    whichIsHuman.classList.remove("human-black");
+    whichIsHuman.classList.add("human-white");
+    board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
+  }
+  data = [];
+  board.innerHTML = "";
+  turn = true;
   for (let i = 0; i < cells; i++) {
     const tr = document.createElement("tr");
     data[i] = Array(cells).fill(0);
@@ -181,7 +198,7 @@ function showTurn() {
     turn = !turn;
     color = BLACK;
     setTimeout(showTurn, 2000);
-    if (color == ai_turn) {
+    if (color == ai_color) {
       setTimeout(ai_action(), 2000);
     }
     return;

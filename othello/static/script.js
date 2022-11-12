@@ -1,15 +1,19 @@
 const BLACK = 1,
   WHITE = -1.
-  DRAW = 0;
+DRAW = 0;
 let data = [];
 let turn = true;
 let ai_color;
 let winner;
+let beforeNumBlack = 2;
+let beforeNumWhite = 2;
 const board = document.getElementById("board");
 const whichIsHuman = document.getElementById("which-is-human");
 const turnPart = document.getElementById("turn-part");
 const h2 = document.querySelector("h2");
 const counter = document.getElementById("counter");
+const numBlackPlus = document.getElementById("numBlackPlus");
+const numWhitePlus = document.getElementById("numWhitePlus");
 
 const START = 0,
   FINISH = 1;
@@ -60,17 +64,6 @@ restartButton.onclick = () => {
   }, 500);
 };
 
-// function start(e) {
-//   closeModal();
-//   cells = 6;
-//   board.innerHTML = "";
-//   init();
-//   modal.classList.add("hide");
-//   if (ai_color == BLACK) {
-//     ai_action();
-//   }
-// }
-
 // 初期化
 function init() {
   if (Math.random() > 0.5) {
@@ -79,14 +72,15 @@ function init() {
     whichIsHuman.classList.remove("human-white");
     whichIsHuman.classList.add("human-black");
     board.classList.remove("reverse"); //反転を解除
-  } else
-  {
+  } else {
     ai_color = BLACK;
     whichIsHuman.textContent = "あなたは白(後手)です";
     whichIsHuman.classList.remove("human-black");
     whichIsHuman.classList.add("human-white");
     board.classList.add("reverse"); //AIが黒（＝プレイヤーが白）のとき、手前側が白になるよう反転
   }
+  beforeNumBlack = 2;
+  beforeNumWhite = 2;
   data = [];
   board.innerHTML = "";
   turn = true;
@@ -108,6 +102,8 @@ function init() {
   putDisc(2, 3, BLACK);
   putDisc(3, 2, BLACK);
   showTurn();
+  numBlackPlus.classList.add("hide");
+  numWhitePlus.classList.add("hide");
   openModal(START);
 }
 
@@ -124,8 +120,69 @@ function putDisc(x, y, color) {
   data[y][x] = color;
 }
 
+function putFirstDisc(x, y, color) {
+  board.rows[y].cells[x].firstChild.className =
+    color === BLACK ? "black" : "white";
+  if (color == BLACK) {
+    board.rows[y].cells[x].animate(
+      [{ backgroundColor: 'black' }, { backgroundColor: 'rgb(128, 216, 154)' }],
+      { duration: 500, fill: "forwards" }
+    );
+  } else {
+    board.rows[y].cells[x].animate(
+      [{ backgroundColor: 'white' }, { backgroundColor: 'rgb(128, 216, 154)' }],
+      { duration: 500, fill: "forwards" }
+    );
+  }
+  data[y][x] = color;
+}
+
+function plusCounterRender(blackPlus, whitePlus) {
+  if (blackPlus != 0) {
+    if (blackPlus < 0) {
+      numBlackPlus.classList.remove("blue");
+      numBlackPlus.classList.add("red");
+      numWhitePlus.classList.add("blue");
+      numWhitePlus.classList.remove("red");
+      whitePlus = '+' + String(whitePlus);
+    } else {
+      numBlackPlus.classList.remove("red");
+      numBlackPlus.classList.add("blue");
+      numWhitePlus.classList.add("red");
+      numWhitePlus.classList.remove("blue");
+      blackPlus = '+' + String(blackPlus);
+    }
+
+    numBlackPlus.textContent = blackPlus;
+    numWhitePlus.textContent = whitePlus;
+    numBlackPlus.classList.remove("hide");
+    numWhitePlus.classList.remove("hide");
+    numBlackPlus.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 500,
+      fill: "forwards",
+    });
+    numWhitePlus.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 500,
+      fill: "forwards",
+    });
+
+    setTimeout(function () {
+      numBlackPlus.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 200,
+        fill: "forwards",
+      });
+      numWhitePlus.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 200,
+        fill: "forwards",
+      });
+    }, 1000);
+  }
+}
+
 // 手番などの表示
 function showTurn() {
+  let blackPlus;
+  let whitePlus;
   yourTurnAnime.cancel();
   aiTurnAnime.cancel();
   var color = turn ? BLACK : WHITE;
@@ -133,7 +190,7 @@ function showTurn() {
   if (color == ai_color) {
     aiTurnAnime.play()
   } else {
-   yourTurnAnime.play();
+    yourTurnAnime.play();
   }
   let numWhite = 0,
     numBlack = 0,
@@ -151,8 +208,15 @@ function showTurn() {
       }
     }
   }
+  blackPlus = numBlack - beforeNumBlack
+  whitePlus = numWhite - beforeNumWhite;
+  beforeNumBlack = numBlack;
+  beforeNumWhite = numWhite;
+
   document.getElementById("numBlack").textContent = numBlack;
   document.getElementById("numWhite").textContent = numWhite;
+
+  plusCounterRender(blackPlus, whitePlus);
 
   let blackDisk = checkReverse(BLACK);
   let whiteDisk = checkReverse(WHITE);
@@ -162,28 +226,18 @@ function showTurn() {
       winner = BLACK;
       openModal(FINISH);
       document.getElementById("numBlack").textContent = numBlack + numEmpty;
-      //turnPart.textContent = color == ai_color ? "AIの勝ち!!" : "あなたの勝ち!!";
-      //restartBtn();
-      //showAnime();
     } else if (numBlack < numWhite) {
       winner = WHITE;
       openModal(FINISH);
       document.getElementById("numWhite").textContent = numWhite + numEmpty;
-      //turnPart.textContent = color == ai_color ? "AIの勝ち!!" : "あなたの勝ち!!";
-      //restartBtn();
-      //showAnime();
     } else {
       winner = DRAW;
       openModal(FINISH);
-      //turnPart.textContent = "引き分け";
-      //restartBtn();
-      //showAnime();
     }
     return;
   }
   if (!blackDisk && turn) {
     turnPart.textContent = color == ai_color ? "AIスキップ" : "あなたスキップ";
-    //showAnime();
     turn = !turn;
     color = WHITE;
     setTimeout(showTurn, 2000);
@@ -194,7 +248,6 @@ function showTurn() {
   }
   if (!whiteDisk && !turn) {
     turnPart.textContent = color == ai_color ? "AIスキップ" : "あなたスキップ";
-    //showAnime();
     turn = !turn;
     color = BLACK;
     setTimeout(showTurn, 2000);
@@ -202,6 +255,47 @@ function showTurn() {
       setTimeout(ai_action(), 2000);
     }
     return;
+  }
+}
+
+function next_state(x, y, color) {
+  const result = checkPut(x, y, color);
+  var maxlen = 0;
+  result.forEach(value => {
+    if (maxlen < value.length) {
+      maxlen = value.length;
+    }
+  });
+  var i = 0;
+  var timer = setInterval(function () {
+    if (i >= maxlen) {
+      clearInterval(timer);
+    }
+    for (let j = 0; j < result.length; j++) {
+      if (i >= result[j].length) {
+        continue;
+      }
+      putDisc(result[j][i][0], result[j][i][1], color);
+    }
+    i++;
+  }, 100);
+  if (result.length > 0) {
+    putFirstDisc(x, y, color);
+    timer;
+    setTimeout(function () {
+      turn = !turn;
+      showTurn();
+      if (color != ai_color) {
+        ai_action();
+      }
+    }, 500);
+  }
+  else {
+    if (color == ai_color) {
+      alert('predict error');
+    } else {
+      return;
+    }
   }
 }
 
@@ -226,20 +320,10 @@ function ai_action() {
         alert('predict error');
         return;
       }
-      const result = checkPut(px, py, color);
-      if (result.length > 0) {
-        result.forEach((value) => {
-          putDisc(value[0], value[1], color);
-        });
-        turn = !turn;
-      }
-      else {
-        alert('predict error');
-      }
-      showTurn();
+      next_state(px, py, color);
     })
     .fail(function () {
-      alert('ajax error')
+      alert('ajax error');
     });
 
 }
@@ -257,19 +341,7 @@ function clicked() {
     if (data[y][x] !== 0) {
       return;
     }
-    const result = checkPut(x, y, color);
-    if (result.length > 0) {
-      result.forEach((value) => {
-        putDisc(value[0], value[1], color);
-      });
-      turn = !turn;
-      color = turn ? BLACK : WHITE
-      showTurn();
-      ai_action();
-    }
-    else {
-      return;
-    }
+    next_state(x, y, color);
   }
 }
 
@@ -306,7 +378,6 @@ function checkPut(x, y, color) {
       dy <= cells - 1 &&
       opponentColor === data[dy][dx]
     ) {
-      tmpReverseDisk.push([x, y]);
       tmpReverseDisk.push([dx, dy]);
       // 裏返せるかチェック
       while (true) {
@@ -326,7 +397,7 @@ function checkPut(x, y, color) {
           tmpReverseDisk.push([dx, dy]);
         }
         if (color === data[dy][dx]) {
-          reverseDisk = reverseDisk.concat(tmpReverseDisk);
+          reverseDisk.push(tmpReverseDisk.concat());
           tmpReverseDisk = [];
           break;
         }
@@ -342,7 +413,7 @@ function checkReverse(color) {
     for (let y = 0; y < cells; y++) {
       const result = checkPut(x, y, color);
       if (result.length > 0) {
-        console.log(result);
+        // console.log(result);
         return true;
       }
     }
@@ -403,21 +474,3 @@ function closeModal() {
     finishDialog.classList.add("hide");
   }, 500);
 }
-
-
-// ゲーム終了画面
-// function restartBtn() {
-//   const restartBtn = document.getElementById("restartBtn");
-//   restartBtn.classList.remove("hide");
-//   restartBtn.animate(
-//     { opacity: [1, 0.5, 1] },
-//     { delay: 2000, duration: 3000, iterations: "Infinity" }
-//   );
-
-//   restartBtn.addEventListener("click", () => {
-//     document.location.reload();
-//   });
-// }
-// function showAnime() {
-//   turnPart.animate({ opacity: [0, 1] }, { duration: 500, iterations: 4 });
-// }

@@ -3,6 +3,7 @@ const BLACK = 1,
 DRAW = 0;
 let data = [];
 let turn = true;
+let available = true;
 let ai_color;
 let winner;
 let beforeNumBlack = 2;
@@ -119,7 +120,7 @@ function putFirstDisc(x, y, color) {
   data[y][x] = color;
 }
 
-function plusCounterRender(blackPlus, whitePlus) {
+function renderPlusCounter(blackPlus, whitePlus) {
   if (blackPlus != 0) {
     if (blackPlus < 0) {
       numBlackPlus.classList.remove("blue");
@@ -157,6 +158,7 @@ function plusCounterRender(blackPlus, whitePlus) {
         duration: 200,
         fill: "forwards",
       });
+      available = true;
     }, 1000);
   }
 }
@@ -175,8 +177,7 @@ function showTurn() {
     yourTurnAnime.play();
   }
   let numWhite = 0,
-    numBlack = 0,
-    numEmpty = 0;
+    numBlack = 0;
   for (let x = 0; x < cells; x++) {
     for (let y = 0; y < cells; y++) {
       if (data[x][y] === WHITE) {
@@ -184,9 +185,6 @@ function showTurn() {
       }
       if (data[x][y] === BLACK) {
         numBlack++;
-      }
-      if (data[x][y] === 0) {
-        numEmpty++;
       }
     }
   }
@@ -198,7 +196,7 @@ function showTurn() {
   document.getElementById("numBlack").textContent = numBlack;
   document.getElementById("numWhite").textContent = numWhite;
 
-  plusCounterRender(blackPlus, whitePlus);
+  renderPlusCounter(blackPlus, whitePlus);
 
   let blackDisk = checkReverse(BLACK);
   let whiteDisk = checkReverse(WHITE);
@@ -207,11 +205,11 @@ function showTurn() {
     if (numBlack > numWhite) {
       winner = BLACK;
       openModal(FINISH);
-      document.getElementById("numBlack").textContent = numBlack + numEmpty;
+      document.getElementById("numBlack").textContent = numBlack;
     } else if (numBlack < numWhite) {
       winner = WHITE;
       openModal(FINISH);
-      document.getElementById("numWhite").textContent = numWhite + numEmpty;
+      document.getElementById("numWhite").textContent = numWhite;
     } else {
       winner = DRAW;
       openModal(FINISH);
@@ -266,9 +264,10 @@ function next_state(x, y, color) {
     timer;
     setTimeout(function () {
       turn = !turn;
+      available = false;
       showTurn();
       if (color != ai_color) {
-        ai_action();
+        setTimeout(ai_action, 500);
       }
     }, 500);
   }
@@ -287,8 +286,8 @@ function ai_action() {
   }
   // console.log("ai_action");
   var color = turn ? BLACK : WHITE;
-  var data_to_py = [data, color]
-  var json = JSON.stringify(data_to_py)
+  var data_to_py = [data, color];
+  var json = JSON.stringify(data_to_py);
   $.ajax({
     type: "POST",
     url: "/predict/",
@@ -315,7 +314,7 @@ function clicked() {
   var color = turn ? BLACK : WHITE;
   const y = this.parentNode.rowIndex;
   const x = this.cellIndex;
-  if (color == ai_color) {
+  if (color == ai_color || !available) {
     return;
   }
   else {

@@ -24,15 +24,18 @@ body {
   border: 1px solid black;
   border-radius: 5px;
   background-color: black;
+
+  border: 1px solid black;
+  background-color: #ff1100;
 }
 
 #which-is-human.human-white {
-  color: black;
+  color: white;
   margin: 0 auto;
   width: 240px;
   border: 1px solid black;
   border-radius: 5px;
-  background-color: white;
+  background-color: #0e0eff;
 }
 
 #board {
@@ -58,9 +61,11 @@ td.cell {
 
 .black {
   background: black;
+  background: #ff1100;
 }
 .white {
   background: white;
+  background: #0e0eff;
 }
 h2 {
   text-align: center;
@@ -69,10 +74,12 @@ h2 {
 
 .options {
   background-color: #00aeef;
+  background-color: yellow
 }
 
 .green {
   background-color: green;
+  background-color: black;
 }
 
 .blue{

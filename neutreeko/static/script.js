@@ -59,13 +59,13 @@ function init() {
   // AIが先手か否か決定
   if (Math.random() > 0.5) {
     ai_color = WHITE;
-    whichIsHuman.textContent = "あなたは黒(先手)です";
+    whichIsHuman.textContent = "あなたは赤(先手)です";
     whichIsHuman.classList.remove("human-white");
     whichIsHuman.classList.add("human-black");
     board.classList.remove("reverse"); //反転を解除
   } else {
     ai_color = BLACK;
-    whichIsHuman.textContent = "あなたは白(後手)です";
+    whichIsHuman.textContent = "あなたは青(後手)です";
     whichIsHuman.classList.remove("human-black");
     whichIsHuman.classList.add("human-white");
   }
@@ -175,9 +175,9 @@ function transfer(destination) {
   stone.style.left = result.left + 6 + "px";
   let stonecolor;
   if (selectedDisk[2] == BLACK){
-    stonecolor = "#000000";
+    stonecolor = "#ff1100";
   }else{
-    stonecolor = "#ffffff";
+    stonecolor = "#0e0eff";
   }
 
   stone.style.backgroundColor = stonecolor;

@@ -17,6 +17,27 @@ body {
   left : 100px;
 }
 
+#you-vs-ai {
+  font-size: 20px;
+  margin-top: 50px;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 360px;
+}
+
+#player {
+  margin-left: auto;
+  margin-right: auto;
+  width: 170px;
+}
+
+#vs-which-ai {
+  margin-left: auto;
+  margin-right: auto;
+  width: 170px;
+}
+
 #which-is-human.human-black {
   color: white;
   margin: 0 auto;
@@ -36,6 +57,64 @@ body {
   border: 1px solid black;
   border-radius: 5px;
   background-color: #0e0eff;
+}
+
+#start-button {
+  font-size: 17px;
+  color: red;
+  border-radius: 50%;
+  line-height: 100px;
+  width: 150px;
+  height: 150px;
+  padding: 0;
+  -webkit-box-shadow: 0 5px 0 red;
+  box-shadow: 0 5px 0 red;
+
+}
+
+#start-button:hover {
+  -webkit-transform: translate(0, 3px);
+  transform: translate(0, 3px);
+  -webkit-box-shadow: 0 2px 0 red;
+  box-shadow: 0 2px 0 red;
+}
+
+#vs-worst {
+  font-size: 18px;
+  color: blue;
+  border-radius: 50%;
+  line-height: 100px;
+  width: 150px;
+  height: 150px;
+  padding: 0;
+  -webkit-box-shadow: 0 5px 0 blue;
+  box-shadow: 0 5px 0 blue;
+}
+
+#vs-worst:hover {
+  -webkit-transform: translate(0, 3px);
+  transform: translate(0, 3px);
+  -webkit-box-shadow: 0 2px 0 blue;
+  box-shadow: 0 2px 0 blue;
+}
+
+#restart-button {
+  font-size: 17px;
+  border-radius: 50%;
+  line-height: 100px;
+  width: 150px;
+  height: 150px;
+  padding: 0;
+  -webkit-box-shadow: 0 5px 0 yellow;
+  box-shadow: 0 5px 0 yellow;
+
+}
+
+#restart-button:hover {
+  -webkit-transform: translate(0, 3px);
+  transform: translate(0, 3px);
+  -webkit-box-shadow: 0 2px 0 yellow;
+  box-shadow: 0 2px 0 yellow;
 }
 
 #board {

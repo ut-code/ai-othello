@@ -13,10 +13,18 @@
     <div id="content">
       <table id="board"></table>
     </div>
+    <div id="you-vs-ai">
+      <div id="player">あなた </div>
+      <div>vs </div>
+      <div id="vs-which-ai"></div>
+    </div>
     <div id="modal">
       <div id="start-dialog" class="dialog hide">
         <h1>Let's play Neutreeko!!</h1>
-        <button id="start-button">プレイする</button>
+        <div class="buttons">
+          <button id="start-button">vs ちょっと強いAI</button>
+          <button id="vs-worst">vs かなり弱いAI</button>
+        </div>
       </div>
       <div id="finish-dialog" class="dialog hide">
         <h1 id="result"></h1>

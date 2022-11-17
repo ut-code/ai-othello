@@ -256,11 +256,15 @@ def boltzman(xs, temperature):
 model = tf.keras.models.load_model('./model/best.h5')
 model.compile(loss=['categorical_crossentropy', 'mse'], optimizer='adam')
 
+worst_model = tf.keras.models.load_model('./model/worst.h5')
+worst_model.compile(loss=['categorical_crossentropy', 'mse'], optimizer='adam')
+
 # 状態の生成
 state = State()
 
 # モンテカルロ木探索で行動取得を行う関数の生成
 next_action = pv_mcts_action(model, 1.0)
+worst_next_action = pv_mcts_action(worst_model, 1.0)
 
 @app.route('/')
 def index():
@@ -283,6 +287,27 @@ def ai_action():
                     enemy_pieces[i*5+j] = 1
         state = State(pieces, enemy_pieces, 0)
         ai_action = next_action(state)
+        ai_action_position = state.action_to_position(ai_action)
+        print(ai_action_position)
+        return [int(ai_action_position[0]), int(ai_action_position[1])]
+
+
+@app.route('/worst/', methods=['POST'])
+def ai_worst_action():
+    if request.method == 'POST':
+        print("request accepted")
+        board = request.json[0]
+        ai_turn = request.json[1]
+        pieces = [0] * 25
+        enemy_pieces = [0] * 25
+        for i in range(5):
+            for j in range(5):
+                if board[i][j] == ai_turn:
+                    pieces[i*5+j] = 1
+                elif board[i][j] == -ai_turn:
+                    enemy_pieces[i*5+j] = 1
+        state = State(pieces, enemy_pieces, 0)
+        ai_action = worst_next_action(state)
         ai_action_position = state.action_to_position(ai_action)
         print(ai_action_position)
         return [int(ai_action_position[0]), int(ai_action_position[1])]

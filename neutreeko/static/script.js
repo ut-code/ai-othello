@@ -9,6 +9,7 @@ let options = [];
 let selectedDisk = [];
 let turn;
 let isFinished; //終了したかどうか
+let worstAI = false;
 
 let ai_color;
 
@@ -16,10 +17,14 @@ const board = document.getElementById("board");
 const whichIsHuman = document.getElementById("which-is-human");
 const turnPart = document.getElementById("turn-part");
 
+const player = document.getElementById("player");
+const vsWhichAI = document.getElementById("vs-which-ai");
+
 const modal = document.getElementById("modal");
 
 const startDialog = document.getElementById("start-dialog");
 const startButton = document.getElementById("start-button");
+const startButtonWorst = document.getElementById("vs-worst");
 
 const finishDialog = document.getElementById("finish-dialog");
 const result = document.getElementById("result");
@@ -32,10 +37,24 @@ let cells = 5;
 
 let yourTurnAnime;
 let aiTurnAnime;
+
+let playerAnime;
+let vsAIAnime;
 createTurnAnime();
 
 
 startButton.onclick = () => {
+  worstAI = false;
+  vsWhichAI.textContent = "ちょっと強いAI"
+  closeModal();
+  if (ai_color == BLACK) {
+    ai_action();
+  }
+};
+
+startButtonWorst.onclick = () => {
+  worstAI = true;
+  vsWhichAI.textContent = "かなり弱いAI"
   closeModal();
   if (ai_color == BLACK) {
     ai_action();
@@ -139,12 +158,17 @@ function render() {
 
 //手番を表示
 function showTurn() {
+  playerAnime.cancel();
+  vsAIAnime.cancel();
+
   yourTurnAnime.cancel();
   aiTurnAnime.cancel();
   if (turn == ai_color) {
+    vsAIAnime.play();
     turnPart.textContent = "AIの番です";
     aiTurnAnime.play();
   } else {
+    playerAnime.play();
     turnPart.textContent = "あなたの番です";
     yourTurnAnime.play();
   }
@@ -258,9 +282,10 @@ function ai_action() {
   console.log("ai_action");
   data_to_py = [data, turn];
   var json = JSON.stringify(data_to_py);
+  var url = worstAI ? "/worst/" : "/predict/";
   $.ajax({
     type: "POST",
-    url: "/predict/",
+    url: url,
     data: json,
     contentType: "application/json",
   })
@@ -460,6 +485,18 @@ function closeModal() {
 }
 
 function createTurnAnime() {
+  playerAnime = player.animate([{ opacity: 1 }, { opacity: 0.1 }], {
+    duration: 700,
+    direction: "alternate",
+    iterations: "Infinity",
+  });
+
+  vsAIAnime = vsWhichAI.animate([{ opacity: 1 }, { opacity: 0.1 }], {
+    duration: 700,
+    direction: "alternate",
+    iterations: "Infinity",
+  });
+
   yourTurnAnime = turnPart.animate([{ opacity: 1 }, { opacity: 0.1 }], {
     duration: 700,
     direction: "alternate",

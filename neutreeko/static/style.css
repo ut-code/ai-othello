@@ -1,6 +1,6 @@
 body {
   text-align: center;
-  background-color: #fff9ee;
+  background-color: white;
   font-family: sans-serif;
 }
 /* main {
@@ -59,13 +59,16 @@ td.cell {
   margin: 0 auto;
 }
 
+
 .black {
   background: black;
   background: #ff1100;
+  box-shadow: 0px 0px 2px 2px black;
 }
 .white {
   background: white;
   background: #0e0eff;
+  box-shadow: 0px 0px 2px 2px black;
 }
 h2 {
   text-align: center;
@@ -79,7 +82,7 @@ h2 {
 
 .green {
   background-color: green;
-  background-color: black;
+  background-color: #aaa;
 }
 
 .blue{

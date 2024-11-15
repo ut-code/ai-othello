@@ -1,10 +1,9 @@
 import tensorflow as tf
 import numpy as np
 from math import sqrt
-from flask import Flask, render_template
-from flask import request
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-app = Flask(__name__)
 model = tf.keras.models.load_model('./model/best.h5')
 
 # パラメータの準備
@@ -146,6 +145,7 @@ class State:
 
 # 推論
 def predict(model, state):
+    # who let the mathematicians in?
     # 推論のための入力データのシェイプの変換
     a, b, c = DN_INPUT_SHAPE
     x = np.array([state.pieces, state.enemy_pieces])
@@ -276,12 +276,11 @@ state = State()
 
 next_action = pv_mcts_action(model, 1.0)
 
-@app.route('/')
-def index():
-    if request.method == 'GET':
-        return render_template('index.html')
+app = FastAPI()
 
-@app.route('/predict/', methods=['POST'])
+app.mount("/", StaticFiles(directory="static",html = True), name="static")
+
+@app.post('/predict/')
 def ai_action():
     if request.method == 'POST':
         print("request accepted")
@@ -299,6 +298,3 @@ def ai_action():
         ai_action = next_action(state)
         print(ai_action)
         return [int(ai_action)]
-
-if __name__ == "__main__":
-    app.run()

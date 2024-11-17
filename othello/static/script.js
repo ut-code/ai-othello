@@ -149,7 +149,7 @@ function renderPlusCounter(blackPlus, whitePlus) {
       fill: "forwards",
     });
 
-    setTimeout(function () {
+    setTimeout(function() {
       numBlackPlus.animate([{ opacity: 1 }, { opacity: 0 }], {
         duration: 200,
         fill: "forwards",
@@ -247,7 +247,7 @@ function next_state(x, y, color) {
     }
   });
   var i = 0;
-  var timer = setInterval(function () {
+  var timer = setInterval(function() {
     if (i >= maxlen) {
       clearInterval(timer);
     }
@@ -262,7 +262,7 @@ function next_state(x, y, color) {
   if (result.length > 0) {
     putFirstDisc(x, y, color);
     timer;
-    setTimeout(function () {
+    setTimeout(function() {
       turn = !turn;
       available = false;
       showTurn();
@@ -286,15 +286,16 @@ function ai_action() {
   }
   // console.log("ai_action");
   var color = turn ? BLACK : WHITE;
-  var data_to_py = [data, color];
+  var data_to_py = { board: data, color };
   var json = JSON.stringify(data_to_py);
+  console.log(json);
   $.ajax({
     type: "POST",
-    url: "/predict/",
+    url: "/predict",
     data: json,
     contentType: "application/json",
   })
-    .done(function (choice) {
+    .done(function(choice) {
       var px = choice[0] % cells;
       var py = Math.floor(choice[0] / cells);
       if (data[py][px] !== 0) {
@@ -303,8 +304,8 @@ function ai_action() {
       }
       next_state(px, py, color);
     })
-    .fail(function () {
-      alert('ajax error');
+    .fail(function(err) {
+      alert('ajax error: ' + err);
     });
 
 }

@@ -3,6 +3,8 @@ import numpy as np
 from math import sqrt
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 model = tf.keras.models.load_model('./model/best.h5')
 
@@ -278,23 +280,30 @@ next_action = pv_mcts_action(model, 1.0)
 
 app = FastAPI()
 
-app.mount("/", StaticFiles(directory="static",html = True), name="static")
+@app.get("/", response_class=HTMLResponse)
+def index():
+    html = open("./static/index.html", "r")
+    return html.read()
+app.mount("/static", StaticFiles(directory="static"))
+
+class Item(BaseModel):
+    board: list[list[int]]
+    color: int
+
 
 @app.post('/predict/')
-def ai_action():
-    if request.method == 'POST':
-        print("request accepted")
-        board = request.json[0]
-        ai_turn = request.json[1]
-        pieces = [0] * 36
-        enemy_pieces = [0] * 36
-        for i in range(6):
-            for j in range(6):
-                if board[i][j] == ai_turn:
-                    pieces[i*6+j] = 1
-                elif board[i][j] == -ai_turn:
-                    enemy_pieces[i*6+j] = 1
-        state = State(pieces, enemy_pieces, 0)
-        ai_action = next_action(state)
-        print(ai_action)
-        return [int(ai_action)]
+def ai_action(body: Item):
+    board = body.board
+    ai_turn = body.color
+    pieces = [0] * 36
+    enemy_pieces = [0] * 36
+    for i in range(6):
+        for j in range(6):
+            if board[i][j] == ai_turn:
+                pieces[i*6+j] = 1
+            elif board[i][j] == -ai_turn:
+                enemy_pieces[i*6+j] = 1
+    state = State(pieces, enemy_pieces, 0)
+    ai_action = next_action(state)
+    print(ai_action)
+    return [int(ai_action)]

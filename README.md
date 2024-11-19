@@ -22,7 +22,18 @@
   - `cd othello`
   - `python3 predict.py`
 
+## デプロイ方法
+
+```sh
+cd othello
+fly deploy
+```
+
 ## デプロイ先
+
+https://othello.utcode.net
+
+--- old
 
 ### ニュートリーコのデプロイ
 

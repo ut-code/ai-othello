@@ -291,7 +291,7 @@ function ai_action() {
   console.log(json);
   $.ajax({
     type: "POST",
-    url: "/predict",
+    url: "/predict/",
     data: json,
     contentType: "application/json",
   })

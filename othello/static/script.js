@@ -305,7 +305,8 @@ function ai_action() {
       next_state(px, py, color);
     })
     .fail(function(err) {
-      alert('ajax error: ' + err);
+      alert('ajax error');
+      console.error(err)
     });
 
 }

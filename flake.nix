@@ -21,6 +21,7 @@
             packages = [
               pkgs.python310
               pythonEnv
+              pkgs.flyctl
             ];
             LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
             shellHook = ''
